@@ -1,10 +1,34 @@
-const glob = require("glob");
-const { time, timeEnd } = require("console");
+const mount = require('koa-mount');
+const static = require('koa-static')
+const app = new (require('koa'));
+const rpcClient = require('./rpc/clinet');
+const template = require('./template');
 
-var result = null;
-time("glob")
-console.log(glob(__dirname + '/**/*',function(err,res){
-    console.log(res);
-}));
-timeEnd("glob")
-console.log(1 + 1);
+const detailTemplate = template(__dirname + '/template/index.html');
+
+app.use(mount('/static', static(`${__dirname}/source/static/`)))
+
+app.use(async (ctx) => {
+    if (!ctx.query.columnid) {
+        ctx.status = 400;
+        ctx.body = 'invalid columnid';
+        return
+    }
+
+    const result = await new Promise((resolve, reject) => {
+
+        rpcClient.write({
+            columnid: ctx.query.columnid
+        }, function (err, data) {
+            err ? reject(err) : resolve(data)
+        })
+    })
+
+    ctx.status = 200;
+
+    ctx.body = detailTemplate(result);
+})
+
+app.listen(3000)
+
+// module.exports = app;
