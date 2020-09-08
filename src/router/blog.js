@@ -18,9 +18,7 @@ const blogRouter = (req, res) => {
     }
 
     if (method === "POST" && req.path === "/api/blog/new") {
-        return {
-            msg: "新建"
-        }
+        const {body} = req;
     }
 
     if (method === "POST" && req.path === "/api/blog/update") {
